@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # Install Java needed for pyspark
-RUN apt-get update -y \
+RUN apt-get -y update \
     && apt-get -y upgrade \
     && apt-get -y install ca-certificates \
     && apt-get -y install apt-utils \
