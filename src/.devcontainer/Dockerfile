@@ -10,7 +10,10 @@ ENV PYTHONUNBUFFERED=1
 # Install Java needed for pyspark
 RUN apt-get update -y \
     && apt-get -y upgrade \
+    && apt-get -y install ca-certificates \
     && apt-get -y install apt-utils \
+    && apt-get -y install curl \
+    && apt-get -y install wget \
     && apt-get -y install sudo \
     && apt-get -y install default-jdk \
     && apt-get -y install nano
