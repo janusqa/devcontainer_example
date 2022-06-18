@@ -9,10 +9,12 @@ class SparkConfig:
     def __init__(self, app_name: str):
         self.app_name = app_name
         self.conf = SparkConf()
-        os.environ["SPARK_LOCAL_IP"] = os.environ.get("SPARK_DRIVER_HOST")
+        os.environ["SPARK_LOCAL_IP"] = socket.gethostbyname(
+            os.environ.get("SPARK_DRIVER_HOST")
+        )
 
     @property
-    def context(self) -> SparkSession:
+    def session(self) -> SparkSession:
 
         self.conf.setAll(
             [

@@ -1,9 +1,10 @@
+from pyspark.sql import SparkSession
 from pyspark.sql.types import IntegerType
 from pyspark.sql.types import StructField
 from pyspark.sql.types import StructType
 
 
-def run_spark_example_1(spark) -> None:
+def run_spark_example_1(spark: SparkSession) -> None:
 
     rows = [
         [1, 100],

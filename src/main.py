@@ -6,6 +6,7 @@ from payload.example_2 import run_spark_example_2
 
 if __name__ == "__main__":
     load_dotenv()
-    spark = SparkConfig("employees").context
+    spark = SparkConfig("employees").session
+    # run_spark_example_1(spark)
     run_spark_example_2(spark)
     spark.stop()
