@@ -1,0 +1,64 @@
+# To start enviroment:
+# $ sudo docker-compose -f docker-compose.yaml down -v && sudo docker-compose -f docker-compose.yaml up --scale spark-worker=n
+# n is the number of spark workers that will be spun up 
+
+# To stop environment:
+# $ sudo docker-compose -f docker-compose.yaml down -v
+
+version: '3.1'
+
+services:
+  spark-master:
+    image: docker.io/bitnami/spark:latest
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./volumes/spark/logs:/opt/bitnami/spark/logs:rw
+      - ./volumes/spark/conf/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf:rw   
+      - ./volumes/spark/conf/log4j.properties:/opt/bitnami/spark/conf/log4j.properties:rw
+    networks:
+      - spark-dev
+
+  spark-worker:
+    image: docker.io/bitnami/spark:latest
+    depends_on:
+      - spark-master    
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    volumes:      
+      - ./volumes/spark/logs:/opt/bitnami/spark/logs:rw
+      - ./volumes/spark/conf/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf:rw   
+      - ./volumes/spark/conf/log4j.properties:/opt/bitnami/spark/conf/log4j.properties:rw
+    networks:
+      - spark-dev
+  
+  pyspark-client:
+    image: pyspark-client
+    depends_on:
+      - spark-master   
+      - spark-worker
+    command: /bin/sh -c "while sleep 1000; do :; done"
+    build:
+      context: ../src/.devcontainer
+      dockerfile: ./Dockerfile
+    volumes:
+      - ../src:/home/vscode/workspace:cached
+    networks:
+      - spark-dev
+
+
+networks:
+  spark-dev:  
