@@ -15,7 +15,6 @@ class SparkConfig:
 
     @property
     def session(self) -> SparkSession:
-
         self.conf.setAll(
             [
                 (
@@ -40,5 +39,4 @@ class SparkConfig:
                 ),
             ]
         )
-
         return SparkSession.builder.config(conf=self.conf).getOrCreate()

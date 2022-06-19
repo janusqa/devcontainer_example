@@ -58,10 +58,9 @@ services:
       dockerfile: ./Dockerfile
     volumes:
       - ../src:/home/vscode/workspace:cached
-      - ./volumes/spark/data:/opt/bitnami/spark/data:z
+      - ./volumes/spark/data:/opt/bitnami/spark/data
     networks:
       - spark-dev
-
-
+      
 networks:
   spark-dev:  
