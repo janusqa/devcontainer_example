@@ -10,6 +10,7 @@ version: '3.1'
 services:
   spark-master:
     image: docker.io/bitnami/spark:latest
+    user: root
     environment:
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
@@ -19,9 +20,8 @@ services:
     ports:
       - '8080:8080'
     volumes:
-      - ./volumes/spark/logs:/opt/bitnami/spark/logs:rw
-      - ./volumes/spark/conf/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf:rw   
-      - ./volumes/spark/conf/log4j.properties:/opt/bitnami/spark/conf/log4j.properties:rw
+      - ./volumes/spark/conf/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf
+      - ./volumes/spark/conf/log4j.properties:/opt/bitnami/spark/conf/log4j.properties
       - ./volumes/spark/data:/opt/bitnami/spark/data
     networks:
       - spark-dev
@@ -29,7 +29,8 @@ services:
   spark-worker:
     image: docker.io/bitnami/spark:latest
     depends_on:
-      - spark-master    
+      - spark-master   
+    user: root 
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
@@ -40,9 +41,8 @@ services:
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
     volumes:      
-      - ./volumes/spark/logs:/opt/bitnami/spark/logs:rw
-      - ./volumes/spark/conf/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf:rw   
-      - ./volumes/spark/conf/log4j.properties:/opt/bitnami/spark/conf/log4j.properties:rw
+      - ./volumes/spark/conf/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf 
+      - ./volumes/spark/conf/log4j.properties:/opt/bitnami/spark/conf/log4j.properties
       - ./volumes/spark/data:/opt/bitnami/spark/data
     networks:
       - spark-dev
@@ -58,7 +58,7 @@ services:
       dockerfile: ./Dockerfile
     volumes:
       - ../src:/home/vscode/workspace:cached
-      - ./volumes/spark/data:/opt/bitnami/spark/data
+      - ./volumes/spark/data:/opt/bitnami/spark/data:z
     networks:
       - spark-dev
 
