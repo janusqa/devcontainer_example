@@ -4,7 +4,7 @@ from pyspark.sql.types import StructField
 from pyspark.sql.types import StructType
 
 
-def run_spark_example_1(spark: SparkSession) -> None:
+def run_spark_example_1(spark: SparkSession, data_dir: str) -> None:
 
     rows = [
         [1, 100],

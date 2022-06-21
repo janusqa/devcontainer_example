@@ -23,12 +23,11 @@ ENV PATH="${PATH}:${JAVA_HOME}"
 RUN export PATH
 
 # Copy python requirements to the docker container and install
-RUN pip install -U pip setuptools && pip install --upgrade pip
-COPY ./requirements.txt .
-RUN python -m pip install -r ./requirements.txt
+# RUN pip install -U pip setuptools && pip install --upgrade pip
+# COPY ./requirements.txt .
+# RUN python -m pip install -r ./requirements.txt
 
 #create a non root user to access the container
-# RUN adduser --uid 1000 --disabled-password --gecos "" vscode
 ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=${USER_UID}
