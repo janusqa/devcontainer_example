@@ -37,7 +37,7 @@ def friends_by_age(spark: SparkSession, data_dir: str):
         SELECT age, CAST(AVG(num_friends) AS DECIMAL(5,2)) AS average_friends
         FROM fakefriends
         GROUP BY age
-        SORT BY age ASC
+        ORDER BY age ASC
         """
     )
     average_friends_per_age.show()

@@ -37,22 +37,26 @@ class SparkConfig:
                     "spark.app.name",
                     self.app_name,
                 ),
-                # (
-                #     "spark.sql.execution.arrow.pyspark.enabled",
-                #     "true",
-                # ),
+                (
+                    "spark.sql.execution.arrow.pyspark.enabled",
+                    "true",
+                ),
+                (
+                    "spark.sql.execution.arrow.pyspark.fallback.enabled",
+                    "true",
+                ),
                 # (
                 #     "spark.pyspark.driver.python",
-                #     "./venv/bin/python",
+                #     os.environ.get("PYSPARK_DRIVER_PYTHON"),
                 # ),
                 # (
                 #     "spark.pyspark.python",
-                #     "./venv/bin/python",
+                #     os.environ.get("PYSPARK_PYTHON"),
                 # ),
-                # (
-                #     "spark.archives",
-                #     "/opt/bitnami/spark/data/venv.tar.gz#venv",
-                # ),
+                (
+                    "spark.archives",
+                    f"{os.environ.get('PYSPARK_DATA')}/venv.tar.gz#/venv",
+                ),
             ]
         )
         return SparkSession.builder.config(conf=self.conf).getOrCreate()
