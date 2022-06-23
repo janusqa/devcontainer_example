@@ -140,6 +140,7 @@ cython_debug/
 
 # Custom
 .idea
+venv.tar.gz
 
 # docker
 docker/volumes/

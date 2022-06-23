@@ -45,17 +45,17 @@ class SparkConfig:
                     "spark.sql.execution.arrow.pyspark.fallback.enabled",
                     "true",
                 ),
-                # (
-                #     "spark.pyspark.driver.python",
-                #     os.environ.get("PYSPARK_DRIVER_PYTHON"),
-                # ),
-                # (
-                #     "spark.pyspark.python",
-                #     os.environ.get("PYSPARK_PYTHON"),
-                # ),
+                (
+                    "spark.pyspark.python",
+                    os.environ.get("PYSPARK_PYTHON"),
+                ),
+                (
+                    "spark.pyspark.driver.python",
+                    os.environ.get("PYSPARK_DRIVER_PYTHON"),
+                ),
                 (
                     "spark.archives",
-                    f"{os.environ.get('PYSPARK_DATA')}/venv.tar.gz#/venv",
+                    "venv.tar.gz#venv",
                 ),
             ]
         )

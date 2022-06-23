@@ -5,3 +5,7 @@
    3. Example foward ports back to the host if your app for instance will launch a listening server
 3. From vscode command palette  (crtl+shirf+p) > Remote-Containers: Rebuild and Reopen in Container
 
+# Package environment to ship to executors
+- venv-pack --python-prefix "/opt/bitnami/python"
+- --python-prefix indicates where to link the executable in the shipped env to the real executable on the executor
+- set .env variable PYSPARK_PYTHON=./venv/bin/python (will use this environment in current working directory on executor)

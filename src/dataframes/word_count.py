@@ -1,14 +1,16 @@
+# Install Spacy
+# pip install -U pip setuptools wheel
+# pip install -U spacy
+# python -m spacy download en_core_web_sm
+
 import sys
 import os
 from dotenv import load_dotenv
-
 import pandas as pd
-
-# import spacy
+import spacy
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import pandas_udf
+from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.types import StringType, StructField, StructType
-from pyspark.sql import functions as func
 
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -18,28 +20,34 @@ from spark_config import SparkConfig
 
 
 def word_count(spark: SparkSession, data_dir: str):
+    SPACY_MODEL = None
+
     def get_spacy_model():
-        global SPACY_MODEL
+        nonlocal SPACY_MODEL
         if not SPACY_MODEL:
-            sm = spacy.load("en_core_web_sm")
-        # FIX https://github.com/explosion/spaCy/issues/922
-        sm.vocab.add_flag(
-            lambda s: s.lower() in spacy.lang.en.stop_words.STOP_WORDS,
-            spacy.attrs.IS_STOP,
-        )
-        SPACY_MODEL = sm
+            nlp = spacy.load("en_core_web_sm")
+            # FIX https://github.com/explosion/spaCy/issues/922
+            nlp.vocab.add_flag(
+                lambda s: s.lower() in spacy.lang.en.stop_words.STOP_WORDS,
+                spacy.attrs.IS_STOP,
+            )
+            SPACY_MODEL = nlp
         return SPACY_MODEL
 
-    @pandas_udf(StringType())
-    def tokenize_and_clean(text_blob: pd.Series) -> str:
+    def tokenize_and_clean(data):
         spacy_model = get_spacy_model()
-        doc = spacy_model.pipe(text_blob)
+        doc = spacy_model.pipe(data)
         tokens = [
-            [tok.lemma_ for tok in sentence if not tok.is_stop and tok.text]
+            [token.lemma_ for token in sentence if not token.is_stop and token.text]
             for sentence in doc
         ]
-        tokens_series = pd.Series(tokens)
-        return tokens_series
+        return pd.Series(tokens)
+
+    @pandas_udf("integer", PandasUDFType.SCALAR)
+    def pandas_tokenize(x):
+        return x.apply(tokenize_and_clean)
+
+    tokenize_pandas = spark.udf.register("tokenize_pandas", pandas_tokenize)
 
     schema = StructType(
         [
@@ -51,10 +59,12 @@ def word_count(spark: SparkSession, data_dir: str):
         .option("header", "false")
         .option("inferSchema", "false")
         .schema(schema)
-        .load(f"file://{data_dir}/book.txt")
+        .load(f"file://{data_dir}/book2.txt")
     )
-    book.select(tokenize_and_clean(book.text)).show()
-    # df = pd.DataFrame()
+
+    tokenized = book.select(tokenize_pandas("text"))
+    tokenized.show()
+
     # words = book.select(func.explode(func.split(book.text, "\\W+")).alias("word"))
     # words.cache()
     # words.createOrReplaceTempView("words")
