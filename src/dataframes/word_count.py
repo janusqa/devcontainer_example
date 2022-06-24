@@ -6,10 +6,11 @@
 import sys
 import os
 from dotenv import load_dotenv
+from typing import Iterator
 import pandas as pd
 import spacy
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import pandas_udf, explode
+from pyspark.sql.functions import pandas_udf, explode, udf
 from pyspark.sql.types import StringType, StructField, StructType
 
 
@@ -51,6 +52,10 @@ def word_count(spark: SparkSession, data_dir: str):
         ]
         return pd.Series(tokens)
 
+    @udf("string")
+    def preprocess(book):
+        return bytes(book, "utf-8").decode("utf-8", "ignore")
+
     book_schema = StructType(
         [
             StructField("text", StringType(), False),
@@ -62,17 +67,17 @@ def word_count(spark: SparkSession, data_dir: str):
         .option("header", "false")
         .option("inferSchema", "false")
         .schema(book_schema)
-        .load(f"file://{data_dir}/book2.txt")
+        .load(f"file://{data_dir}/book.txt")
     )
 
+    book = book.withColumn("text", preprocess(book.text))
     word_frequency = (
         book.select(explode(tokenize_and_clean(book.text)).alias("tokens"))
         .groupBy("tokens")
         .count()
         .sort("count", ascending=True)
     )
-    for summary in word_frequency.collect():
-        print(summary.asDict()["tokens"], summary.asDict()["count"])
+    word_frequency.show(word_frequency.count())
 
     # words = book.select(explode(func.split(book.text, "\\W+")).alias("word"))
     # words.cache()
@@ -97,5 +102,5 @@ def word_count(spark: SparkSession, data_dir: str):
 if __name__ == "__main__":
     load_dotenv()
     data_dir = "/opt/bitnami/spark/data/"
-    with SparkConfig("CustomerOrders") as spark:
+    with SparkConfig("WordCount") as spark:
         word_count(spark, data_dir)

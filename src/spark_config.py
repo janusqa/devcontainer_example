@@ -45,6 +45,7 @@ class SparkConfig:
                     "spark.sql.execution.arrow.pyspark.fallback.enabled",
                     "true",
                 ),
+                ("spark.sql.execution.arrow.maxRecordsPerBatch", 10000),
                 (
                     "spark.pyspark.python",
                     os.environ.get("PYSPARK_PYTHON"),
