@@ -22,6 +22,7 @@ services:
     volumes:
       - ./volumes/spark/conf/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf
       - ./volumes/spark/conf/log4j.properties:/opt/bitnami/spark/conf/log4j.properties
+      - ./volumes/spark/conf/master-spark-env.sh:/opt/bitnami/spark/conf/spark-env.sh
       - ./volumes/spark/data:/opt/bitnami/spark/data
     networks:
       - spark-dev
@@ -43,6 +44,7 @@ services:
     volumes:      
       - ./volumes/spark/conf/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf 
       - ./volumes/spark/conf/log4j.properties:/opt/bitnami/spark/conf/log4j.properties
+      - ./volumes/spark/conf/worker-spark-env.sh:/opt/bitnami/spark/conf/spark-env.sh
       - ./volumes/spark/data:/opt/bitnami/spark/data
     networks:
       - spark-dev

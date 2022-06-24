@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 import pandas as pd
 import spacy
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import pandas_udf, PandasUDFType
+from pyspark.sql.functions import pandas_udf, explode
 from pyspark.sql.types import StringType, StructField, StructType
 
 
@@ -34,38 +34,47 @@ def word_count(spark: SparkSession, data_dir: str):
             SPACY_MODEL = nlp
         return SPACY_MODEL
 
-    def tokenize_and_clean(data):
+    @pandas_udf("array<string>")
+    def tokenize_and_clean(doc: pd.Series) -> pd.Series:
         spacy_model = get_spacy_model()
-        doc = spacy_model.pipe(data)
+        doc_lines = list(spacy_model.pipe(doc))
         tokens = [
-            [token.lemma_ for token in sentence if not token.is_stop and token.text]
-            for sentence in doc
+            [
+                token.text
+                for token in line
+                if not token.is_stop
+                and not token.is_punct
+                and token.text
+                and len(token.text.strip()) > 0
+            ]
+            for line in doc_lines
         ]
         return pd.Series(tokens)
 
-    @pandas_udf("integer", PandasUDFType.SCALAR)
-    def pandas_tokenize(x):
-        return x.apply(tokenize_and_clean)
-
-    tokenize_pandas = spark.udf.register("tokenize_pandas", pandas_tokenize)
-
-    schema = StructType(
+    book_schema = StructType(
         [
             StructField("text", StringType(), False),
         ]
     )
+
     book = (
         spark.read.format("text")
         .option("header", "false")
         .option("inferSchema", "false")
-        .schema(schema)
+        .schema(book_schema)
         .load(f"file://{data_dir}/book2.txt")
     )
 
-    tokenized = book.select(tokenize_pandas("text"))
-    tokenized.show()
+    word_frequency = (
+        book.select(explode(tokenize_and_clean(book.text)).alias("tokens"))
+        .groupBy("tokens")
+        .count()
+        .sort("count", ascending=True)
+    )
+    for summary in word_frequency.collect():
+        print(summary.asDict()["tokens"], summary.asDict()["count"])
 
-    # words = book.select(func.explode(func.split(book.text, "\\W+")).alias("word"))
+    # words = book.select(explode(func.split(book.text, "\\W+")).alias("word"))
     # words.cache()
     # words.createOrReplaceTempView("words")
     # words_count = spark.sql(
