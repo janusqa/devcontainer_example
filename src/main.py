@@ -1,14 +1,14 @@
 from dotenv import load_dotenv
 from spark_config import SparkConfig
-from payload.example_1 import run_spark_example_1
-from payload.example_2 import run_spark_example_2
-from payload.ratings_counter import ratings_counter
-from payload.friends_by_age import friends_by_age
-from payload.min_temperatures import min_temperatures_year_1800
-from payload.word_count import word_count
-from payload.word_count_better import word_count_better
-from payload.word_count_better_sorted import word_count_better_sorted
-from payload.customer_orders import customer_orders
+from rdd.example_1 import run_spark_example_1
+from rdd.example_2 import run_spark_example_2
+from rdd.ratings_counter import ratings_counter
+from rdd.friends_by_age import friends_by_age
+from rdd.min_temperatures import min_temperatures_year_1800
+from rdd.word_count import word_count
+from rdd.word_count_better import word_count_better
+from rdd.word_count_better_sorted import word_count_better_sorted
+from rdd.customer_orders import customer_orders
 
 
 if __name__ == "__main__":
