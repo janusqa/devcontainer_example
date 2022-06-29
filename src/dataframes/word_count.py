@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from typing import Iterator
 import pandas as pd
 import spacy
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, Column as SparkColumn
 from pyspark.sql.functions import pandas_udf, explode, udf
 from pyspark.sql.types import StringType, StructField, StructType
 
@@ -41,7 +41,7 @@ def word_count(spark: SparkSession, data_dir: str):
         doc_lines = list(spacy_model.pipe(doc))
         tokens = [
             [
-                token.text
+                token.text.lower()
                 for token in line
                 if not token.is_stop
                 and not token.is_punct
@@ -53,10 +53,10 @@ def word_count(spark: SparkSession, data_dir: str):
         return pd.Series(tokens)
 
     @udf("string")
-    def preprocess(book):
+    def preprocess(book: SparkColumn) -> SparkColumn:
         return bytes(book, "utf-8").decode("utf-8", "ignore")
 
-    book_schema = StructType(
+    schema = StructType(
         [
             StructField("text", StringType(), False),
         ]
@@ -66,7 +66,7 @@ def word_count(spark: SparkSession, data_dir: str):
         spark.read.format("text")
         .option("header", "false")
         .option("inferSchema", "false")
-        .schema(book_schema)
+        .schema(schema)
         .load(f"file://{data_dir}/book.txt")
     )
 
