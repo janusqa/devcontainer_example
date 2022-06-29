@@ -49,8 +49,8 @@ from spark_config import SparkConfig
 
 def superhero_degrees(spark: SparkSession, data_dir: str):
 
-    start_character_id = 6166  # 467  # Spiderman: 5306
-    target_character_id = 979  # 1803  # ADAM 3.031: 14
+    start_character_id = 5306  # 467  # Spiderman: 5306
+    target_character_id = 14  # 1803  # ADAM 3.031: 14
     found = spark.sparkContext.accumulator(0)
     depth = spark.sparkContext.accumulator(0)
 
@@ -144,10 +144,11 @@ def superhero_degrees(spark: SparkSession, data_dir: str):
     )
 
     while found.value == 0 and depth.value < 10:
+        depth.add(1)
         # scan the graph and get processed rows back
         scanned = graph_rdd.flatMap(bfs_expand, graph.schema)
         print(
-            f"Processed {graph_rdd.count()} nodes at a distance of {depth.value} from character with ID {start_character_id}."
+            f"Processed {scanned.count()} nodes at a distance of {depth.value} from character with ID {start_character_id}."
         )
         if found.value > 0:
             print(
@@ -155,7 +156,6 @@ def superhero_degrees(spark: SparkSession, data_dir: str):
             )
         # merge scanned back into graph
         graph_rdd = scanned.reduceByKey(bfs_reduce)
-        depth.add(1)
 
     graph = graph_rdd.map(
         lambda x: {
